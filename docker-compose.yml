@@ -1,0 +1,59 @@
+version: '3'
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: ./hubstaff/Dockerfile    
+    stdin_open: true
+    tty: true
+    command: ["xvfb-run", "python", "manage.py", "runserver", "0.0.0.0:8000"]
+    volumes:
+      - ./hubstaff:/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+      - redis
+
+  redis:
+    image: redis:alpine
+    ports:
+      - "6380:6379"
+
+  react:
+    build:
+      context: .
+      dockerfile: ./react_project/Dockerfile
+    volumes:
+      - ./react_project:/app
+    ports:
+      - "3000:80"
+    stdin_open: true
+    tty: true
+
+  celery:
+    build:
+      context: .
+      dockerfile: ./hubstaff/Dockerfile
+    user: django-user
+    command: ["xvfb-run", "celery", "-A", "hubstaff", "worker", "--loglevel=info"]
+    volumes:
+      - ./hubstaff:/app
+    depends_on:
+      - db
+      - redis
+
+  db:
+    image: postgres:latest
+    environment:
+      POSTGRES_DB: hubstaff
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    ports:
+      - "5433:5432"
+
+volumes:
+  postgres_data:
