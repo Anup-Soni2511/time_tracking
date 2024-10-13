@@ -11,7 +11,21 @@ from django.contrib.auth import get_user_model
 from celery import shared_task, current_task
 from django.core.cache import cache
 from celery import current_app
-from celery.contrib.abortable import AbortableTask
+# from celery.contrib.abortable import AbortableTask
+
+import pyautogui
+from pynput import mouse, keyboard
+from threading import Timer
+import os
+from django.conf import settings
+import time
+from django.utils import timezone
+from .models import ActivityDetail, HustaffDetail
+from datetime import datetime
+from django.contrib.auth import get_user_model
+from celery import shared_task, current_task
+from django.core.cache import cache
+from celery import current_app
 
 class UserActivityMonitor:
     def __init__(self, user_id, log_interval=60):
@@ -19,7 +33,6 @@ class UserActivityMonitor:
         self.log_interval = log_interval
         self.mouse_active_time = 0
         self.keyboard_active_time = 0
-        self.stop_requested = False  # Flag to stop monitoring
 
         self.start_time = time.time()
         self.last_start_time = self.start_time
@@ -49,29 +62,42 @@ class UserActivityMonitor:
             self.keyboard_last_active = current_time
 
     def log_activity(self):
-        # Check if stop was requested
-        if self.stop_requested:
-            print(f"Stopping activity monitoring for user {self.user_id}")
-            self.stop_listeners()
-            return
-
         ending_time = time.time()
         total_time = ending_time - self.last_start_time
         mouse_percentage = (self.mouse_active_time / total_time) * 100 if total_time > 0 else 0
         keyboard_percentage = (self.keyboard_active_time / total_time) * 100 if total_time > 0 else 0
 
-        # Create ActivityDetail instance and save to the database
-        ActivityDetail.objects.create(
+        # Prepare the new log entry
+        new_log = {
+            'start_time': timezone.make_aware(datetime.fromtimestamp(self.last_start_time)).isoformat(),
+            'end_time': timezone.make_aware(datetime.fromtimestamp(ending_time)).isoformat(),
+            'mouse_activity_time': f"{self.mouse_active_time:.2f}",
+            'mouse_activity_percentage': f"{mouse_percentage:.2f}",
+            'keyboard_activity_time': f"{self.keyboard_active_time:.2f}",
+            'keyboard_activity_percentage': f"{keyboard_percentage:.2f}",
+            'total_percentage': f"{(mouse_percentage + keyboard_percentage) / 2:.2f}",
+            'screenshot': self.take_screenshot()  # Save screenshot and get file path
+        }
+
+        # Get or create the ActivityDetail instance for the day
+        activity_detail, created = ActivityDetail.objects.get_or_create(
             hubstaff_detail=self.hubstaff_detail,
-            start_time=timezone.make_aware(datetime.fromtimestamp(self.last_start_time)),
-            end_time=timezone.make_aware(datetime.fromtimestamp(ending_time)),
-            mouse_activity_time=f"{self.mouse_active_time:.2f}",
-            mouse_activity_percentage=f"{mouse_percentage:.2f}",
-            keyboard_activity_time=f"{self.keyboard_active_time:.2f}",
-            keyboard_activity_percentage=f"{keyboard_percentage:.2f}",
-            image=self.take_screenshot(),  # Save screenshot and get file path
-            total_percentage=f"{(mouse_percentage + keyboard_percentage)/2:.2f}"  # Example of total percentage
+            defaults={'activity_data': []}  # Create an empty array for the first log
         )
+
+        # If the record already exists, append the new log to the JSON field
+        if not created:
+            activity_logs = activity_detail.activity_data  # Get existing logs
+        else:
+            activity_logs = []
+
+        # Append the new log entry
+        activity_logs.append(new_log)
+
+
+        # Update the activity_data JSON field
+        activity_detail.activity_data = activity_logs
+        activity_detail.save()
 
         print(f"Time: {timezone.now()}")
         print(f"Total Time: {total_time:.2f} seconds")
@@ -111,58 +137,76 @@ class UserActivityMonitor:
     def start(self):
         self.mouse_listener.start()
         self.keyboard_listener.start()
-
-        while not self.stop_requested:
-            if self.is_aborted():
-                return "Task Stopppped!!"
-            time.sleep(1)
-
-            # Periodically check the stop flag from the cache (set by the stop task)
-            if cache.get(f"stop_flag_{self.user_id.id}"):
-                self.stop_requested = True
-
-        # Stop logging and cleanup once the stop flag is set
         self.log_activity()
-    
 
-# @shared_task
-# def start_user_activity_monitor(user_id):
-#     User = get_user_model()
-#     user = User.objects.get(id=user_id)
-    
-#     monitor = UserActivityMonitor(user_id=user)
-#     task_id = current_task.request.id
-#     cache.set(f"user_activity_task_{user_id}", task_id, timeout=None)  # Cache task ID
-#     print(f"Starting activity monitor for user {user_id}")
-#     monitor.start()  # Start monitoring
 
-@shared_task(bind=True, base=AbortableTask)
-def start_user_activity_monitor(self, user_id):
+from celery import current_app
+import logging
+logger = logging.getLogger(__name__)
+
+
+
+@shared_task
+def stop_user_activity_monitor(user_id):
     User = get_user_model()
-    user = User.objects.get(id=user_id)
+    try:
+        user = User.objects.get(id=user_id)
+    except User.DoesNotExist:
+        logger.error(f"User with ID {user_id} does not exist.")
+        return
+
+    logger.info(f"Attempting to stop activity monitor for user {user_id}")
+
+    # Logic to stop the task goes here
+    # Make sure stop_listeners() works correctly
+    monitor = UserActivityMonitor(user_id=user)
+    monitor.stop_listeners()
+
+    # Optional: revoke the task
+    task_id = cache.get(f"user_activity_task_{user_id}")
+    if task_id:
+        logger.info(f"Revoking task {task_id} for user {user_id}")
+        current_app.control.revoke(task_id, terminate=False)  # Graceful stop
+        cache.delete(f"user_activity_task_{user_id}")
+
+    logger.info(f"Activity monitor stopped for user {user_id}")
+
+
+@shared_task
+def start_user_activity_monitor(user_id):
+    User = get_user_model()
+    try:
+        user = User.objects.get(id=user_id)
+    except User.DoesNotExist:
+        logger.error(f"User with ID {user_id} does not exist.")
+        return
     
     monitor = UserActivityMonitor(user_id=user)
-    task_id = self.request.id
-    cache.set(f"user_activity_task_{user_id}", task_id, timeout=None)
-    print(f"Starting activity monitor for user {user_id}")
-    monitor.start()
+    task_id = current_task.request.id
+    cache.set(f"user_activity_task_{user_id}", task_id, timeout=None)  # Cache task ID
+    logger.info(f"Starting activity monitor for user {user_id}")
+    monitor.start()  # Start monitoring
 
+@shared_task
+def stop_user_activity_monitor(user_id):
+    User = get_user_model()
+    try:
+        user = User.objects.get(id=user_id)
+    except User.DoesNotExist:
+        logger.error(f"User with ID {user_id} does not exist.")
+        return
 
-# @shared_task
-# def stop_user_activity_monitor(user_id):
-#     task_id = cache.get(f"user_activity_task_{user_id}")
-#     if task_id:
-#         print(f"Requesting stop for task {task_id} of user {user_id}")
-        
-#         # Set the stop flag in Redis
-#         cache.set(f"stop_flag_{user_id}", True)
+    logger.info(f"Attempting to stop activity monitor for user {user_id}")
 
-#         # Optionally revoke the task (terminate=False for graceful exit)
-#         current_app.control.revoke(task_id, terminate=False)
-        
-#         # Clean up the cached task ID
-#         cache.delete(f"user_activity_task_{user_id}")
-        
-#         return True
-#     print(f"No task ID found in cache for user {user_id}")
-#     return False
+    # Logic to stop the task goes here
+    monitor = UserActivityMonitor(user_id=user)
+    monitor.stop_listeners()
+
+    # Revoke the task if necessary
+    task_id = cache.get(f"user_activity_task_{user_id}")
+    if task_id:
+        logger.info(f"Revoking task {task_id} for user {user_id}")
+        current_app.control.revoke(task_id, terminate=False)  # Graceful stop
+        cache.delete(f"user_activity_task_{user_id}")
+
+    logger.info(f"Activity monitor stopped for user {user_id}")

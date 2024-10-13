@@ -35,14 +35,7 @@ class ActivityDetailInline(admin.TabularInline):  # or admin.StackedInline for a
     model = ActivityDetail
     extra = 1
     fields = (
-        'start_time',
-        'end_time',
-        'mouse_activity_time',
-        'mouse_activity_percentage',
-        'keyboard_activity_time',
-        'keyboard_activity_percentage',
-        'image',
-        'total_percentage',
+        'activity_data',
     )
 
 class HustaffDetailAdmin(admin.ModelAdmin):

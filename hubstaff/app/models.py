@@ -86,15 +86,8 @@ class HustaffDetail(models.Model):
     
 
 class ActivityDetail(models.Model):
-    hubstaff_detail = models.ForeignKey(HustaffDetail, on_delete=models.CASCADE, related_name='activity_details')
-    start_time = models.TimeField()
-    end_time = models.TimeField()
-    mouse_activity_time = models.CharField(max_length=50)
-    mouse_activity_percentage = models.CharField(max_length=20)
-    keyboard_activity_time = models.CharField(max_length=50)
-    keyboard_activity_percentage = models.CharField(max_length=20)
-    image = models.ImageField(upload_to='images/', blank=True, null=True)
-    total_percentage = models.CharField(max_length=20)
+    hubstaff_detail = models.ForeignKey('HustaffDetail', on_delete=models.CASCADE, related_name='activity_details')
+    activity_data = models.JSONField()
 
     def __str__(self):
-        return f"{self.hubstaff_detail.user}-{self.hubstaff_detail.date}-{self.start_time}"
+        return f"{self.hubstaff_detail.user}-{self.hubstaff_detail.date}"

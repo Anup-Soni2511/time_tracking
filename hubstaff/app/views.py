@@ -116,75 +116,96 @@ class UserActivityView(APIView):
 
     def get(self, request, format=None):
         user = request.user
-        date = request.GET.get('date', None)
-        today = datetime.strptime(date, '%Y-%m-%d').date()
+        date_param = "2024-10-13"
+
+        # Parse date (use today's date if date_param is None)
+        if date_param is None:
+            today = datetime.now().today()
+        else:
+            try:
+                today = datetime.strptime(date_param, '%Y-%m-%d').date()
+            except ValueError:
+                return Response({'error': 'Invalid date format. Use YYYY-MM-DD.'}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
             hubstaff_detail = HustaffDetail.objects.get(user=user, date=today)
         except HustaffDetail.DoesNotExist:
-            return Response({'error': 'No activity details found for today.'}, status=status.HTTP_404_NOT_FOUND)
+            return Response({'error': 'No activity details found for this date.'}, status=status.HTTP_404_NOT_FOUND)
 
         # Retrieve activity details for today
         activity_details = ActivityDetail.objects.filter(hubstaff_detail=hubstaff_detail)
 
-        start_time = timezone.make_aware(datetime.combine(today, datetime.min.time()))
-        end_time = timezone.make_aware(datetime.combine(today, datetime.max.time()))
+        # Define start_time and end_time for the whole day
+        start_time = timezone.make_aware(datetime.combine(today, datetime.min.time()))  # 12:00 AM today
+        end_time = timezone.make_aware(datetime.combine(today, datetime.max.time()))    # 11:59 PM today
 
         intervals = []
         current_start = start_time
 
-        total_worked_duration = timedelta()  # To accumulate total worked time
-        total_activity_percentage = 0  # To accumulate activity percentage
-        num_intervals = 0  # Number of intervals with activity
+        total_worked_duration = timedelta()
+        total_activity_percentage = 0
+        num_intervals = 0
 
         while current_start < end_time:
             current_end = current_start + timedelta(minutes=10)
 
-            # Filter activity details within the current interval
-            interval_data = activity_details.filter(start_time__gte=current_start, end_time__lt=current_end)
-            
-            if interval_data.exists():
-                total_mouse_activity_time = interval_data.aggregate(total_mouse_time=Sum(Cast('mouse_activity_time', FloatField())))['total_mouse_time'] or 0
-                total_mouse_activity_percentage = interval_data.aggregate(total_mouse_percentage=Avg(Cast(Substr('mouse_activity_percentage', 1, 5), FloatField())))['total_mouse_percentage'] or 0
-                total_keyboard_activity_time = interval_data.aggregate(total_keyboard_time=Sum(Cast(Substr('keyboard_activity_time', 1, 5), FloatField())))['total_keyboard_time'] or 0
-                total_keyboard_activity_percentage = interval_data.aggregate(total_keyboard_percentage=Avg(Cast(Substr('keyboard_activity_percentage', 1, 5), FloatField())))['total_keyboard_percentage'] or 0
-                total_duration = interval_data.aggregate(total_duration=Sum(ExpressionWrapper(F('end_time') - F('start_time'), output_field=DurationField())))['total_duration'] or timedelta()
+            # Filter activity details for this interval
+            interval_data = []
+            for detail in activity_details:
+                for activity in detail.activity_data:
+                    start = datetime.fromisoformat(activity['start_time'])
+                    end = datetime.fromisoformat(activity['end_time'])
 
-                # Accumulate worked time and activity percentage
+                    # No need to call make_aware(), as `start` and `end` are already timezone-aware
+                    if start >= current_start and end < current_end:
+                        interval_data.append(activity)
+
+            if interval_data:
+                # Aggregation of times and percentages for the interval
+                total_mouse_activity_time = sum([float(activity['mouse_activity_time']) for activity in interval_data])
+                total_mouse_activity_percentage = sum([float(activity['mouse_activity_percentage']) for activity in interval_data]) / len(interval_data)
+                total_keyboard_activity_time = sum([float(activity['keyboard_activity_time']) for activity in interval_data])
+                total_keyboard_activity_percentage = sum([float(activity['keyboard_activity_percentage']) for activity in interval_data]) / len(interval_data)
+
+                # Calculate the total duration of activity during this interval
+                total_duration = sum([(datetime.fromisoformat(activity['end_time']) - datetime.fromisoformat(activity['start_time'])) for activity in interval_data], timedelta())
+
                 total_worked_duration += total_duration
                 total_activity_percentage += (total_mouse_activity_percentage + total_keyboard_activity_percentage) / 2
                 num_intervals += 1
 
-                # Format times for 12-hour clock with AM/PM
+                # Format time intervals for display
                 start_time_str = current_start.strftime('%I:%M %p')
                 end_time_str = current_end.strftime('%I:%M %p')
                 time_interval = f"{start_time_str} - {end_time_str}"
 
-                images = interval_data.values_list('image', flat=True).exclude(image__isnull=True)
+                # Select a random image from the interval data if available
+                images = [activity['screenshot'] for activity in interval_data if activity.get('screenshot')]
                 random_image_url = random.choice(images) if images else None
 
                 intervals.append({
-                    'id': interval_data[0].id,
                     'time': time_interval,
                     'mouse_activity_time': format_time_in_minutes_or_seconds(total_mouse_activity_time),
                     'mouse_activity_percentage': f"{total_mouse_activity_percentage:.2f}",
                     'keyboard_activity_time': format_time_in_minutes_or_seconds(total_keyboard_activity_time),
                     'keyboard_activity_percentage': f"{total_keyboard_activity_percentage:.2f}",
-                    'duration': f"{math.ceil(total_duration.total_seconds() / 60)} minutes",  # Total duration in minutes
+                    'duration': f"{math.ceil(total_duration.total_seconds() / 60)} minutes",
                     'percent': f"{round((total_mouse_activity_percentage + total_keyboard_activity_percentage) / 2)}",
                     'image_url': random_image_url if random_image_url else None
                 })
 
             current_start = current_end
 
-        # Calculate total working percentage (average over all intervals)
+        # Calculate overall working percentage for the day
         total_working_percentage = total_activity_percentage / num_intervals if num_intervals > 0 else 0
 
-        # Prepare the final response with intervals, total worked time, and total working percentage
+        # Convert total worked duration to string for JSON serialization
+        total_worked_time_str = format_time_in_minutes_or_seconds(total_worked_duration.total_seconds())
+
         response_data = {
             'intervals': intervals,
-            'total_worked_time': format_time_in_minutes_or_seconds(total_worked_duration.total_seconds()),  # Total worked time
-            'total_working_percentage': f"{total_working_percentage:.2f}"  # Average working percentage
+            'total_worked_time': total_worked_time_str,
+            'total_working_percentage': f"{total_working_percentage:.2f}"
         }
 
         return Response(response_data, status=status.HTTP_200_OK)
