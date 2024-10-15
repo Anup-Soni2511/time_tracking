@@ -1,7 +1,7 @@
-
 import React, { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { setTime, startTimer, stopTimer } from '../redux/timerSlice'
+import { setTime, startTimer, stopTimer } from '../redux/timerSlice';
+import axios from 'axios';
 
 const Timer = () => {
     const dispatch = useDispatch();
@@ -50,13 +50,37 @@ const Timer = () => {
         return () => clearInterval(intervalId);
     }, [currentDate, dispatch]);
 
-
-    const handleStartTimer = () => {
-        dispatch(startTimer());
+    const handleStartTimer = async () => {
+        try {
+            const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzI5MDk5MzAzLCJpYXQiOjE3Mjg5MjY1MDMsImp0aSI6IjdhNTMzMmQ3MmU0ODQwMjg4MTMxMjdhZDcxMzZiODg5IiwidXNlcl9pZCI6Mn0.6O6OC72RKF3Vpu87GhBExyCHvqTvau8iXaOU8mhe3Gc'; // Replace with your actual token
+            await axios.post('http://localhost:8000/api/user/activity-details/', {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                },
+                action: 'start'
+            });
+            dispatch(startTimer());
+        } catch (error) {
+            console.error('Failed to start the timer:', error);
+        }
     };
 
-    const handleStopTimer = () => {
-        dispatch(stopTimer());
+    const handleStopTimer = async () => {
+        try {
+            const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzI5MDk5MzAzLCJpYXQiOjE3Mjg5MjY1MDMsImp0aSI6IjdhNTMzMmQ3MmU0ODQwMjg4MTMxMjdhZDcxMzZiODg5IiwidXNlcl9pZCI6Mn0.6O6OC72RKF3Vpu87GhBExyCHvqTvau8iXaOU8mhe3Gc'; // Replace with your actual token
+            await axios.post(
+                'http://localhost:8000/api/user/activity-details-stop/', 
+                { action: 'stop' }, // Payload data
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`, // Authorization header
+                    }
+                }
+            );
+            dispatch(stopTimer());
+        } catch (error) {
+            console.error('Failed to stop the timer:', error);
+        }
     };
 
     return (
@@ -114,7 +138,3 @@ const Timer = () => {
 };
 
 export default Timer;
-
-
-
-

@@ -13,7 +13,7 @@ from rest_framework.permissions import IsAuthenticated
 from .models import ActivityDetail, HustaffDetail
 from django.db.models import Sum, Avg, F, ExpressionWrapper, FloatField, DurationField, CharField
 import math
-from .task import start_user_activity_monitor
+from .task import start_user_activity_monitor, stop_user_activity_monitor
 from django.db.models.functions import Cast, Substr 
 
 
@@ -92,6 +92,7 @@ class UserActivityView(APIView):
         # This is a blocking call, which means the server will wait here
         # In a real-world scenario, consider using a background task queue
         result = start_user_activity_monitor.delay(user.id)
+        request.session[f"user_activity_task_{user.id}"] = result.id
         
         # Extract task_id instead of returning the full object
         task_id = result.id
@@ -217,12 +218,10 @@ class StopUserActivityView(APIView):
         user = request.user
         if not user.is_authenticated:
             return JsonResponse({'error': 'User is not authenticated'}, status=403)
-        import pdb;pdb.set_trace()
-        task_id = request.GET.get('task_id', None)
+        task_id = request.session.get(f"user_activity_task_{user.id}", None)
 
-        result = start_user_activity_monitor.AsyncResult(self, task_id)
-        result.abort()
-        if result:
+        if task_id:
+            result = stop_user_activity_monitor.delay(user.id)
             return Response({"message": "User activity monitor stop request sent."}, status=status.HTTP_200_OK)
         else:
             return Response({"message": "No active task found for this user."}, status=status.HTTP_404_NOT_FOUND)

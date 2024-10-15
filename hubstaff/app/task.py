@@ -9,23 +9,11 @@ from .models import ActivityDetail, HustaffDetail
 from datetime import datetime
 from django.contrib.auth import get_user_model
 from celery import shared_task, current_task
-from django.core.cache import cache
 from celery import current_app
-# from celery.contrib.abortable import AbortableTask
 
-import pyautogui
-from pynput import mouse, keyboard
-from threading import Timer
-import os
-from django.conf import settings
-import time
-from django.utils import timezone
-from .models import ActivityDetail, HustaffDetail
-from datetime import datetime
-from django.contrib.auth import get_user_model
-from celery import shared_task, current_task
-from django.core.cache import cache
 from celery import current_app
+import logging
+logger = logging.getLogger(__name__)
 
 class UserActivityMonitor:
     def __init__(self, user_id, log_interval=60):
@@ -33,6 +21,8 @@ class UserActivityMonitor:
         self.log_interval = log_interval
         self.mouse_active_time = 0
         self.keyboard_active_time = 0
+        self.monitor_timer = None
+        self.is_running = False
 
         self.start_time = time.time()
         self.last_start_time = self.start_time
@@ -46,6 +36,8 @@ class UserActivityMonitor:
         self.hubstaff_detail, _ = HustaffDetail.objects.get_or_create(user=self.user_id, date=timezone.now().date())
 
     def on_mouse_activity(self, *args):
+        if not self.is_running:
+            return
         current_time = time.time()
         if self.mouse_last_active is None:
             self.mouse_last_active = current_time
@@ -54,6 +46,8 @@ class UserActivityMonitor:
             self.mouse_last_active = current_time
 
     def on_keyboard_activity(self, *args):
+        if not self.is_running:
+            return
         current_time = time.time()
         if self.keyboard_last_active is None:
             self.keyboard_last_active = current_time
@@ -62,6 +56,8 @@ class UserActivityMonitor:
             self.keyboard_last_active = current_time
 
     def log_activity(self):
+        if not self.is_running:
+            return
         ending_time = time.time()
         total_time = ending_time - self.last_start_time
         mouse_percentage = (self.mouse_active_time / total_time) * 100 if total_time > 0 else 0
@@ -112,7 +108,8 @@ class UserActivityMonitor:
         self.keyboard_last_active = None
 
         # Schedule the next log and screenshot at a fixed interval
-        Timer(self.log_interval, self.log_activity).start()
+        self.monitor_timer = Timer(self.log_interval, self.log_activity)
+        self.monitor_timer.start()
 
     def take_screenshot(self):
         # Create a filename based on user email and current time
@@ -127,49 +124,23 @@ class UserActivityMonitor:
         print(f"Screenshot saved as {filename} in {settings.MEDIA_ROOT}")
         return filename
 
+    def start(self):
+        self.is_running = True
+        self.mouse_listener.start()
+        self.keyboard_listener.start()
+        self.log_activity()
+
     def stop_listeners(self):
         # Stop the listeners safely
+        self.is_running = False
         if self.mouse_listener:
             self.mouse_listener.stop()
         if self.keyboard_listener:
             self.keyboard_listener.stop()
 
-    def start(self):
-        self.mouse_listener.start()
-        self.keyboard_listener.start()
-        self.log_activity()
-
-
-from celery import current_app
-import logging
-logger = logging.getLogger(__name__)
-
-
-
-@shared_task
-def stop_user_activity_monitor(user_id):
-    User = get_user_model()
-    try:
-        user = User.objects.get(id=user_id)
-    except User.DoesNotExist:
-        logger.error(f"User with ID {user_id} does not exist.")
-        return
-
-    logger.info(f"Attempting to stop activity monitor for user {user_id}")
-
-    # Logic to stop the task goes here
-    # Make sure stop_listeners() works correctly
-    monitor = UserActivityMonitor(user_id=user)
-    monitor.stop_listeners()
-
-    # Optional: revoke the task
-    task_id = cache.get(f"user_activity_task_{user_id}")
-    if task_id:
-        logger.info(f"Revoking task {task_id} for user {user_id}")
-        current_app.control.revoke(task_id, terminate=False)  # Graceful stop
-        cache.delete(f"user_activity_task_{user_id}")
-
-    logger.info(f"Activity monitor stopped for user {user_id}")
+        # Cancel the scheduled Timer if it's running
+        if self.monitor_timer:
+            self.monitor_timer.cancel()
 
 
 @shared_task
@@ -180,12 +151,14 @@ def start_user_activity_monitor(user_id):
     except User.DoesNotExist:
         logger.error(f"User with ID {user_id} does not exist.")
         return
-    
+
     monitor = UserActivityMonitor(user_id=user)
     task_id = current_task.request.id
-    cache.set(f"user_activity_task_{user_id}", task_id, timeout=None)  # Cache task ID
+
+    # No need to store the task ID here since it's handled in the view
     logger.info(f"Starting activity monitor for user {user_id}")
     monitor.start()  # Start monitoring
+    return task_id
 
 @shared_task
 def stop_user_activity_monitor(user_id):
@@ -198,15 +171,14 @@ def stop_user_activity_monitor(user_id):
 
     logger.info(f"Attempting to stop activity monitor for user {user_id}")
 
-    # Logic to stop the task goes here
+    # Stop the monitor safely without killing the worker
     monitor = UserActivityMonitor(user_id=user)
     monitor.stop_listeners()
 
-    # Revoke the task if necessary
-    task_id = cache.get(f"user_activity_task_{user_id}")
+    # Revoke the Celery task safely using revoke method
+    task_id = current_task.request.id
     if task_id:
         logger.info(f"Revoking task {task_id} for user {user_id}")
-        current_app.control.revoke(task_id, terminate=False)  # Graceful stop
-        cache.delete(f"user_activity_task_{user_id}")
+        current_app.control.revoke(task_id, terminate=True)  # Terminate the task safely
 
     logger.info(f"Activity monitor stopped for user {user_id}")
