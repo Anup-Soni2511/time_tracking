@@ -16,6 +16,7 @@ const validationSchema = Yup.object({
 });
 
 const LoginPage = () => {
+  const HOST_URL = import.meta.env.VITE_HOST_URL
   const formik = useFormik({
     initialValues: {
       email: '',
@@ -24,7 +25,7 @@ const LoginPage = () => {
     validationSchema: validationSchema,
     onSubmit: async (values) => {
       try {
-        const response = await axios.post('http://127.0.0.1:8000/api/user/login/', values);
+        const response = await axios.post(HOST_URL+'/api/user/login/', values);
         alert('Login successful');
         console.log(response.data);
       } catch (error) {

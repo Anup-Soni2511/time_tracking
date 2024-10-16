@@ -16,6 +16,7 @@ const validationSchema = Yup.object({
 });
 
 const LoginPage = () => {
+  const HOST_URL = import.meta.env.VITE_HOST_URL
   const formik = useFormik({
     initialValues: {
       password: '',
@@ -24,7 +25,7 @@ const LoginPage = () => {
     validationSchema: validationSchema,
     onSubmit: async (values) => {
       try {
-        const response = await axios.post('http://127.0.0.1:8000/api/user/reset-password/Mg/cd1opu-efcb8c1d2ea62a9e09de1319f4c13ec3', values);
+        const response = await axios.post(HOST_URL+'/api/user/reset-password/Mg/cd1opu-efcb8c1d2ea62a9e09de1319f4c13ec3', values);
         alert('Register successful');
         console.log(response.data);
       } catch (error) {

@@ -3,7 +3,9 @@ import { useSelector, useDispatch } from 'react-redux';
 import { setTime, startTimer, stopTimer } from '../redux/timerSlice';
 import axios from 'axios';
 
+
 const Timer = () => {
+    const HOST_URL = import.meta.env.VITE_HOST_URL
     const dispatch = useDispatch();
     const time = useSelector((state) => state.timer.time);
     const isRunning = useSelector((state) => state.timer.isRunning);
@@ -53,7 +55,7 @@ const Timer = () => {
     const handleStartTimer = async () => {
         try {
             const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzI5MjI4ODAyLCJpYXQiOjE3MjkwNTYwMDIsImp0aSI6IjQ3ZmMxMGQ3ZjI1ZTQzMTZhZWVmNmFjNmE5ZjM1YmU3IiwidXNlcl9pZCI6Mn0.fjaFPtNt4K6fQ_5_vsOAcC558BCNU6MmAg4TBMEZBUs'; // Replace with your actual token
-            await axios.post('http://localhost:8000/api/user/activity-details/',
+            await axios.post(HOST_URL+'/api/user/activity-details/',
                 { action: 'start' },
                 {
                     headers: {
@@ -72,7 +74,7 @@ const Timer = () => {
         try {
             const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzI5MjI4ODAyLCJpYXQiOjE3MjkwNTYwMDIsImp0aSI6IjQ3ZmMxMGQ3ZjI1ZTQzMTZhZWVmNmFjNmE5ZjM1YmU3IiwidXNlcl9pZCI6Mn0.fjaFPtNt4K6fQ_5_vsOAcC558BCNU6MmAg4TBMEZBUs'; // Replace with your actual token
             await axios.post(
-                'http://localhost:8000/api/user/activity-details-stop/',
+                HOST_URL+'/api/user/activity-details-stop/',
                 { action: 'stop' }, // Payload data
                 {
                     headers: {

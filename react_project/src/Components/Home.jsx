@@ -3,9 +3,14 @@ import { DatePicker } from 'rsuite';
 import 'rsuite/DatePicker/styles/index.css';
 import { addDays, subDays, format, addMinutes, startOfHour, parse } from 'date-fns';
 import axios from 'axios';
+import Lottie from 'lottie-react'; // Import Lottie
+import animationData from '../../Animations/Animation - 1729060841093.json'
+import animationLoader from '../../Animations/Animation - 1729077237017.json'
+
 
 
 const Home = () => {
+const HOST_URL = import.meta.env.VITE_HOST_URL
 const [startDate, setStartDate] = useState(new Date());
 const [pageData, setPageData] = useState([]);
 const [isModalOpen, setIsModalOpen] = useState(false);
@@ -13,6 +18,7 @@ const [selectedImageIndex, setSelectedImageIndex] = useState(null);
 const [workedTime, setWorkedTime] = useState('');
 const [averageActivity, setAverageActivity] = useState('');
 const [hasError, setHasError] = useState(false);
+const [loader, setLoader] = useState(true)
 
 const convertToHMS = (timeString) => {
     const timeParts = timeString.match(/(\d+)\s*minutes?\s*(\d+\.\d+)?\s*seconds?/);
@@ -54,7 +60,7 @@ useEffect(() => {
     try {
         const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzI5MjI4ODAyLCJpYXQiOjE3MjkwNTYwMDIsImp0aSI6IjQ3ZmMxMGQ3ZjI1ZTQzMTZhZWVmNmFjNmE5ZjM1YmU3IiwidXNlcl9pZCI6Mn0.fjaFPtNt4K6fQ_5_vsOAcC558BCNU6MmAg4TBMEZBUs'; // Replace with your actual token
         const formattedDate = formatDate(startDate);
-        const response = await axios.get('http://127.0.0.1:8000/api/user/activity-details/', {
+        const response = await axios.get(HOST_URL+'/api/user/activity-details/', {
         headers: {
             Authorization: `Bearer ${token}`
         },
@@ -69,13 +75,16 @@ useEffect(() => {
             const formattedWorkedTime = convertToHMS(response.data.total_worked_time);
             setWorkedTime(formattedWorkedTime);  // Set worked time
             setAverageActivity(response.data.total_working_percentage);  // Set average activity
-            setHasError(false);  // Reset error state if successful
+            setHasError(false);// Reset error state if successful
+            setLoader(false)  
         } else {
             setHasError(true);  // No intervals, set error state
+            setLoader(true) 
         }
 
     } catch (error) {
         setHasError(true);
+        setLoader(true)
         console.error("Error fetching data:", error);
     }
     };
@@ -201,11 +210,12 @@ const decreaseDate = () => {
 
 return (
     
+        loader ? (
+            <div className="flex flex-col items-center justify-center">
+            <Lottie animationData={animationLoader} loop={true} />
+        </div>
+        ) : (
     <div>
-    {
-    hasError ? (
-    <div>No data found</div>  // Show "No data found" if there is an error
-    ) : (
     <section className="bg-gray-100 dark:bg-gray-900">
         <div className="flex flex-col items-center px-4 py-8 mx-auto">
         <div className="w-full h-full bg-white rounded-lg shadow dark:border md:mt-0 xl:p-0 dark:bg-gray-800 dark:border-gray-700">
@@ -270,7 +280,12 @@ return (
                 </div>
             </div>
 
-            {timeSections.map((section, sectionIndex) => {
+            {
+            hasError ? (
+                <div className="flex flex-col items-center justify-center h-1/2">
+                <Lottie animationData={animationData} loop={true} />
+            </div>
+            ) : (timeSections.map((section, sectionIndex) => {
                 const timeSlots = generateTimeSlots(section.sectionStart, section.sectionEnd);
                 return (
                 <div key={sectionIndex} className="my-8">
@@ -286,7 +301,7 @@ return (
                                 className="relative overflow-hidden shadow-lg m-3 pb-4 cursor-pointer group rounded-2xl h-52 "
                                 onClick={() => handleImageClick(item.id)}
                             >
-                                <img className="w-full h-28" src="https://c.tadst.com/gfx/300x168/fb-stopwatch2.png?1" alt="Screenshot" />
+                                <img className="w-full h-28" src={`${HOST_URL}/media/${item.image_url}`} alt="Screenshot" />
                                 <div className="px-3 pt-3">
                                 <div className="font-normal text-sm mb-4">{item.time}</div>
                                 </div>
@@ -320,12 +335,11 @@ return (
                     </div>
                 </div>
                 );
-            })}
+                }))}
             </div>
         </div>
         </div>
     </section>
-    )}
 
     {isModalOpen && selectedImageIndex !== null && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
@@ -340,7 +354,7 @@ return (
             </svg>
             </button>
             <div className="text-center text-xl font-semibold flex-grow">Date : {formatDate(startDate)}</div>
-            <img className="w-full mb-4" src="https://c.tadst.com/gfx/300x168/fb-stopwatch2.png?1" alt="Detailed view" />
+            <img className="w-full mb-4" src={`${HOST_URL}/media/${pageData[selectedImageIndex]?.image_url}`} alt="Detailed view" />
             <div className="flex justify-between items-center mt-4">
             <button
                 onClick={handlePrevious}
@@ -366,7 +380,9 @@ return (
     )}
     
     </div>
+        )
 );
 };
+
 
 export default Home;

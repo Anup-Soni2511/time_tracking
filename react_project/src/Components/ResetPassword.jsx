@@ -10,6 +10,7 @@ const validationSchema = Yup.object({
 });
 
 const ResetPassword = () => {
+  const HOST_URL = import.meta.env.VITE_HOST_URL
   const formik = useFormik({
     initialValues: {
       email: '',
@@ -17,7 +18,7 @@ const ResetPassword = () => {
     validationSchema: validationSchema,
     onSubmit: async (values) => {
       try {
-        const response = await axios.post('http://127.0.0.1:8000/api/user/send-reset-password-email/', values);
+        const response = await axios.post(HOST_URL+'/api/user/send-reset-password-email/', values);
         alert('Email Send Successful');
         console.log(response.data);
       } catch (error) {

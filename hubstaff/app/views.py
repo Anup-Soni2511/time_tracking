@@ -181,8 +181,7 @@ class UserActivityView(APIView):
                 time_interval = f"{start_time_str} - {end_time_str}"
 
                 # Select a random image from the interval data if available
-                images = [activity['screenshot'] for activity in interval_data if activity.get('screenshot')]
-                random_image_url = random.choice(images) if images else None
+                random_image_url = interval_data[-1]['screenshot']
 
                 intervals.append({
                     'time': time_interval,
