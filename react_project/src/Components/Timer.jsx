@@ -52,12 +52,15 @@ const Timer = () => {
 
     const handleStartTimer = async () => {
         try {
-            const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzI5MDk5MzAzLCJpYXQiOjE3Mjg5MjY1MDMsImp0aSI6IjdhNTMzMmQ3MmU0ODQwMjg4MTMxMjdhZDcxMzZiODg5IiwidXNlcl9pZCI6Mn0.6O6OC72RKF3Vpu87GhBExyCHvqTvau8iXaOU8mhe3Gc'; // Replace with your actual token
-            await axios.post('http://localhost:8000/api/user/activity-details/', {
-                headers: {
-                    Authorization: `Bearer ${token}`
-                },
-                action: 'start'
+            const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzI5MjI4ODAyLCJpYXQiOjE3MjkwNTYwMDIsImp0aSI6IjQ3ZmMxMGQ3ZjI1ZTQzMTZhZWVmNmFjNmE5ZjM1YmU3IiwidXNlcl9pZCI6Mn0.fjaFPtNt4K6fQ_5_vsOAcC558BCNU6MmAg4TBMEZBUs'; // Replace with your actual token
+            await axios.post('http://localhost:8000/api/user/activity-details/',
+                { action: 'start' },
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    },
+                    withCredentials: true,
+
             });
             dispatch(startTimer());
         } catch (error) {
@@ -67,14 +70,15 @@ const Timer = () => {
 
     const handleStopTimer = async () => {
         try {
-            const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzI5MDk5MzAzLCJpYXQiOjE3Mjg5MjY1MDMsImp0aSI6IjdhNTMzMmQ3MmU0ODQwMjg4MTMxMjdhZDcxMzZiODg5IiwidXNlcl9pZCI6Mn0.6O6OC72RKF3Vpu87GhBExyCHvqTvau8iXaOU8mhe3Gc'; // Replace with your actual token
+            const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzI5MjI4ODAyLCJpYXQiOjE3MjkwNTYwMDIsImp0aSI6IjQ3ZmMxMGQ3ZjI1ZTQzMTZhZWVmNmFjNmE5ZjM1YmU3IiwidXNlcl9pZCI6Mn0.fjaFPtNt4K6fQ_5_vsOAcC558BCNU6MmAg4TBMEZBUs'; // Replace with your actual token
             await axios.post(
-                'http://localhost:8000/api/user/activity-details-stop/', 
+                'http://localhost:8000/api/user/activity-details-stop/',
                 { action: 'stop' }, // Payload data
                 {
                     headers: {
                         Authorization: `Bearer ${token}`, // Authorization header
-                    }
+                    },
+                    withCredentials: true,
                 }
             );
             dispatch(stopTimer());

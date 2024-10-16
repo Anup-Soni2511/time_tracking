@@ -21,7 +21,6 @@ const ResetPassword = () => {
         alert('Email Send Successful');
         console.log(response.data);
       } catch (error) {
-        debugger
         if (error.response && error.response.data) {
           const errorMessages = error.response.data.non_field_errors;
           formik.setErrors({

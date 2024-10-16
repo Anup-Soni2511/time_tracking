@@ -28,7 +28,6 @@ const LoginPage = () => {
         alert('Register successful');
         console.log(response.data);
       } catch (error) {
-        debugger
         if (error.response && error.response.data) {
           const backendErrors = error.response.data.non_field_errors;
           const formikErrors = {};

@@ -38,7 +38,6 @@ const SignUp = () => {
         alert('Register successful');
         console.log(response.data);
       } catch (error) {
-        debugger
         if (error.response && error.response.data) {
           const backendErrors = error.response.data;
           const formikErrors = {};

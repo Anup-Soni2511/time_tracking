@@ -117,7 +117,7 @@ class UserActivityView(APIView):
 
     def get(self, request, format=None):
         user = request.user
-        date_param = "2024-10-13"
+        date_param = request.GET.get('date', None)
 
         # Parse date (use today's date if date_param is None)
         if date_param is None:
