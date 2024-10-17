@@ -59,7 +59,7 @@ useEffect(() => {
     const fetchData = async () => {
     setLoader(true);
     try {
-        const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzI5MjI4ODAyLCJpYXQiOjE3MjkwNTYwMDIsImp0aSI6IjQ3ZmMxMGQ3ZjI1ZTQzMTZhZWVmNmFjNmE5ZjM1YmU3IiwidXNlcl9pZCI6Mn0.fjaFPtNt4K6fQ_5_vsOAcC558BCNU6MmAg4TBMEZBUs'; // Replace with your actual token
+        const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzI5MzU5NjYyLCJpYXQiOjE3MjkxODY4NjIsImp0aSI6ImI1MzkzOTg5OTQ4NzQyZmE4MmIwNjkxMzdhMmYwYmU3IiwidXNlcl9pZCI6Mn0.acwvScv56kDeB5AWfJPiD8MTmQr8yzcDGEeL9rcsaPI'; // Replace with your actual token
         const formattedDate = formatDate(startDate);
         const response = await axios.get(HOST_URL+'/api/user/activity-details/', {
         headers: {

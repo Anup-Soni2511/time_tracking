@@ -21,7 +21,7 @@ function App() {
           <Route path='/login' element={<Login />} />
           <Route path='/signup' element={<SignUp />} />
           <Route path='/reset-password-email' element={<ResetPassword />} />
-          <Route path='/update-password' element={<UpdatePassword />} />
+          <Route path='/update-password/:userId/:token' element={<UpdatePassword />} />
           <Route path='/timer' element={<Timer />} />
 
         </Routes>
