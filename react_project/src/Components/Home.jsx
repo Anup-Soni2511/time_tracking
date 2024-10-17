@@ -2,11 +2,10 @@ import { useState, useEffect } from "react";
 import { DatePicker } from 'rsuite';
 import 'rsuite/DatePicker/styles/index.css';
 import { addDays, subDays, format, addMinutes, startOfHour, parse } from 'date-fns';
-import axios from 'axios';
 import Lottie from 'lottie-react'; // Import Lottie
 import animationData from '../../Animations/Animation - 1729060841093.json'
 import animationLoader from '../../Animations/Animation - 1729077237017.json'
-
+import axiosInstance from './axiosConfig';
 
 
 const Home = () => {
@@ -59,12 +58,8 @@ useEffect(() => {
     const fetchData = async () => {
     setLoader(true);
     try {
-        const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzI5MzU5NjYyLCJpYXQiOjE3MjkxODY4NjIsImp0aSI6ImI1MzkzOTg5OTQ4NzQyZmE4MmIwNjkxMzdhMmYwYmU3IiwidXNlcl9pZCI6Mn0.acwvScv56kDeB5AWfJPiD8MTmQr8yzcDGEeL9rcsaPI'; // Replace with your actual token
         const formattedDate = formatDate(startDate);
-        const response = await axios.get(HOST_URL+'/api/user/activity-details/', {
-        headers: {
-            Authorization: `Bearer ${token}`
-        },
+        const response = await axiosInstance.get(HOST_URL+'/api/user/activity-details/', {
         params: {
             date: formattedDate, // Pass the formatted date as a query parameter
         }

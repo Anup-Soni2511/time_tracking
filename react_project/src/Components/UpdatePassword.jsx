@@ -1,7 +1,7 @@
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
-import axios from 'axios';
 import { useParams } from 'react-router-dom';
+import axiosInstance from './axiosConfig';
 
 const validationSchema = Yup.object({
   password: Yup.string()
@@ -23,7 +23,7 @@ const UpdatePassword = () => {
     validationSchema: validationSchema,
     onSubmit: async (values) => {
       try {
-        const response = await axios.post(`${HOST_URL}/api/user/reset-password/${userId}/${token}`, values);
+        const response = await axiosInstance.post(`${HOST_URL}/api/user/reset-password/${userId}/${token}`, values);
         alert('Password updated successfully');
         console.log(response.data);
       } catch (error) {

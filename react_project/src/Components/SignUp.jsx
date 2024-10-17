@@ -1,7 +1,7 @@
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import { Link } from 'react-router-dom';
-import axios from 'axios';
+import axiosInstance from './axiosConfig';
 
 const validationSchema = Yup.object({
   name: Yup.string()
@@ -35,7 +35,7 @@ const SignUp = () => {
     validationSchema: validationSchema,
     onSubmit: async (values) => {
       try {
-        const response = await axios.post(HOST_URL+'/api/user/register/', values);
+        const response = await axiosInstance.post(HOST_URL+'/api/user/register/', values);
         alert('Register successful');
         console.log(response.data);
       } catch (error) {

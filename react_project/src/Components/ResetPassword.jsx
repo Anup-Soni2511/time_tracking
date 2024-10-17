@@ -1,8 +1,9 @@
 import { useFormik } from 'formik';
 import { Link } from 'react-router-dom';
 import * as Yup from 'yup';
-import axios from 'axios';
 import { useState } from 'react';
+import axiosInstance from './axiosConfig';
+
 
 const validationSchema = Yup.object({
   email: Yup.string()
@@ -21,7 +22,7 @@ const ResetPassword = () => {
     validationSchema: validationSchema,
     onSubmit: async (values) => {
       try {
-        const response = await axios.post(HOST_URL + '/api/user/send-reset-password-email/', values);
+        const response = await axiosInstance.post(HOST_URL + '/api/user/send-reset-password-email/', values);
         alert('Email sent successfully');
         console.log(response.data);
         setIsEmailSent(true);
