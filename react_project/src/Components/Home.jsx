@@ -57,6 +57,7 @@ console.log(formatDate(startDate));
 
 useEffect(() => {
     const fetchData = async () => {
+    setLoader(true);
     try {
         const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzI5MjI4ODAyLCJpYXQiOjE3MjkwNTYwMDIsImp0aSI6IjQ3ZmMxMGQ3ZjI1ZTQzMTZhZWVmNmFjNmE5ZjM1YmU3IiwidXNlcl9pZCI6Mn0.fjaFPtNt4K6fQ_5_vsOAcC558BCNU6MmAg4TBMEZBUs'; // Replace with your actual token
         const formattedDate = formatDate(startDate);
@@ -79,12 +80,12 @@ useEffect(() => {
             setLoader(false)  
         } else {
             setHasError(true);  // No intervals, set error state
-            setLoader(true) 
+            setLoader(false)
         }
 
     } catch (error) {
         setHasError(true);
-        setLoader(true)
+        setLoader(false)
         console.error("Error fetching data:", error);
     }
     };

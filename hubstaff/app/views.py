@@ -184,6 +184,7 @@ class UserActivityView(APIView):
                 random_image_url = interval_data[-1]['screenshot']
 
                 intervals.append({
+                    'id': time_interval,
                     'time': time_interval,
                     'mouse_activity_time': format_time_in_minutes_or_seconds(total_mouse_activity_time),
                     'mouse_activity_percentage': f"{total_mouse_activity_percentage:.2f}",

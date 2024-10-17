@@ -2,6 +2,7 @@ import { useFormik } from 'formik';
 import { Link } from 'react-router-dom';
 import * as Yup from 'yup';
 import axios from 'axios';
+import { useState } from 'react';
 
 const validationSchema = Yup.object({
   email: Yup.string()
@@ -10,7 +11,9 @@ const validationSchema = Yup.object({
 });
 
 const ResetPassword = () => {
-  const HOST_URL = import.meta.env.VITE_HOST_URL
+  const HOST_URL = import.meta.env.VITE_HOST_URL;
+  const [isEmailSent, setIsEmailSent] = useState(false);
+
   const formik = useFormik({
     initialValues: {
       email: '',
@@ -18,9 +21,10 @@ const ResetPassword = () => {
     validationSchema: validationSchema,
     onSubmit: async (values) => {
       try {
-        const response = await axios.post(HOST_URL+'/api/user/send-reset-password-email/', values);
-        alert('Email Send Successful');
+        const response = await axios.post(HOST_URL + '/api/user/send-reset-password-email/', values);
+        alert('Email sent successfully');
         console.log(response.data);
+        setIsEmailSent(true);
       } catch (error) {
         if (error.response && error.response.data) {
           const errorMessages = error.response.data.non_field_errors;
@@ -31,7 +35,7 @@ const ResetPassword = () => {
         } else {
           alert('Email send failed');
         }
-        console.error(error); // Handle errors as needed
+        console.error(error);
       }
     },
   });
@@ -42,43 +46,39 @@ const ResetPassword = () => {
         <div className="flex flex-col items-center justify-center px-6 py-8 mx-auto md:h-screen lg:py-0">
           <div className="w-full bg-white rounded-lg shadow dark:border md:mt-0 sm:max-w-md xl:p-0 dark:bg-gray-800 dark:border-gray-700">
             <div className="p-6 space-y-4 md:space-y-6 sm:p-8">
+              <h1 className="text-xl font-bold leading-tight tracking-tight text-gray-900 md:text-2xl dark:text-white">
+                Send Email for Reset Password
+              </h1>
+              <form onSubmit={formik.handleSubmit}>
+                <div className='pt-4'>
+                  <label htmlFor="email" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Your email</label>
+                  <input 
+                    type="email" 
+                    name="email" 
+                    id="email" 
+                    className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" 
+                    placeholder="Your email"
+                    onChange={formik.handleChange}
+                    onBlur={formik.handleBlur}
+                    value={formik.values.email}
+                  />
+                  {formik.touched.email && formik.errors.email ? (
+                    <div style={{ color: 'red' }}>{formik.errors.email}</div>
+                  ) : null}
+                </div>
 
-                    <h1 className="text-xl font-bold leading-tight tracking-tight text-gray-900 md:text-2xl dark:text-white">
-                        Send Email for Reset Password
-                    </h1>
-                    <form onSubmit={formik.handleSubmit}>
-
-                        <div className='pt-4'>
-                        <label htmlFor="email" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Your email</label>
-                        <input 
-                            type="email" 
-                            name="email" 
-                            id="email" 
-                            className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" 
-                            placeholder="Your email"
-                            onChange={formik.handleChange}
-                            onBlur={formik.handleBlur}
-                            value={formik.values.email}
-                        />
-                        {formik.touched.email && formik.errors.email ? (
-                            <div style={{ color: 'red' }}>{formik.errors.email}</div>
-                        ) : null}
-                        </div>
-
-                        <div className="flex -mx-3 mt-4">
-                        <div className="w-full px-3">
-                            <button
-                            type="submit"
-                            className="block w-full max-w-xs mx-auto bg-indigo-500 hover:bg-indigo-700 focus:bg-indigo-700 text-white rounded-lg px-3 py-3 font-semibold"
-                            disabled={!formik.isValid}
-                            >
-                            Send Email
-                            </button>
-                        </div>
-                        </div>
-
-                    </form>
-
+                <div className="flex -mx-3 mt-4">
+                  <div className="w-full px-3">
+                    <button
+                      type="submit"
+                      className="block w-full max-w-xs mx-auto bg-indigo-500 hover:bg-indigo-700 focus:bg-indigo-700 text-white rounded-lg px-3 py-3 font-semibold"
+                      disabled={!formik.isValid || isEmailSent}
+                    >
+                      {isEmailSent ? 'Email Sent' : 'Send Email'}
+                    </button>
+                  </div>
+                </div>
+              </form>
             </div>
           </div>
         </div>
