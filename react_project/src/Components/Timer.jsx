@@ -58,9 +58,6 @@ const Timer = () => {
             await axiosInstance.post(HOST_URL+'/api/user/activity-details/',
                 { action: 'start' },
                 {
-                    headers: {
-                        Authorization: `Bearer ${token}`
-                    },
                     withCredentials: true,
 
             });
@@ -76,9 +73,6 @@ const Timer = () => {
                 HOST_URL+'/api/user/activity-details-stop/',
                 { action: 'stop' }, // Payload data
                 {
-                    headers: {
-                        Authorization: `Bearer ${token}`, // Authorization header
-                    },
                     withCredentials: true,
                 }
             );

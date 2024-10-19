@@ -24,7 +24,6 @@ const UpdatePassword = () => {
     onSubmit: async (values) => {
       try {
         const response = await axiosInstance.post(`${HOST_URL}/api/user/reset-password/${userId}/${token}`, values);
-        alert('Password updated successfully');
         console.log(response.data);
       } catch (error) {
         if (error.response && error.response.data) {
@@ -36,7 +35,6 @@ const UpdatePassword = () => {
           }
           formik.setErrors(formikErrors)
         } else {
-          alert('Password change failed');
         }
         console.error(error);
       }

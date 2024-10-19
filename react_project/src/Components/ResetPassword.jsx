@@ -23,7 +23,6 @@ const ResetPassword = () => {
     onSubmit: async (values) => {
       try {
         const response = await axiosInstance.post(HOST_URL + '/api/user/send-reset-password-email/', values);
-        alert('Email sent successfully');
         console.log(response.data);
         setIsEmailSent(true);
       } catch (error) {
@@ -34,7 +33,7 @@ const ResetPassword = () => {
             email: errorMessages ? errorMessages[0] : null,
           });
         } else {
-          alert('Email send failed');
+          console.log("error reset-password")
         }
         console.error(error);
       }

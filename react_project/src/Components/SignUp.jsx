@@ -2,6 +2,7 @@ import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import { Link } from 'react-router-dom';
 import axiosInstance from './axiosConfig';
+import { useAuth } from './contexts/AuthContext';
 
 const validationSchema = Yup.object({
   name: Yup.string()
@@ -24,6 +25,7 @@ const validationSchema = Yup.object({
 
 const SignUp = () => {
   const HOST_URL = import.meta.env.VITE_HOST_URL
+  const { login } = useAuth(); 
   const formik = useFormik({
     initialValues: {
       name: '',
@@ -36,8 +38,14 @@ const SignUp = () => {
     onSubmit: async (values) => {
       try {
         const response = await axiosInstance.post(HOST_URL+'/api/user/register/', values);
-        alert('Register successful');
+        const { refresh, access } = response.data.token;
+        localStorage.setItem('access_token', access);
+        localStorage.setItem('refresh_token', refresh);
         console.log(response.data);
+
+        if (access) {
+          login(access);
+        }
       } catch (error) {
         if (error.response && error.response.data) {
           const backendErrors = error.response.data;
@@ -51,7 +59,6 @@ const SignUp = () => {
           }
           formik.setErrors(formikErrors)
         } else {
-          alert('Register failed');
         }
         console.error(error);
       }
