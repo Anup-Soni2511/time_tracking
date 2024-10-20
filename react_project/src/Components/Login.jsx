@@ -3,6 +3,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import * as Yup from 'yup';
 import axiosInstance from './axiosConfig';
 import { useAuth } from './contexts/AuthContext'; // Move the import here
+import { useState } from "react";
+
 
 const validationSchema = Yup.object({
   email: Yup.string()
@@ -16,6 +18,7 @@ const LoginPage = () => {
   const HOST_URL = import.meta.env.VITE_HOST_URL;
   const navigate = useNavigate();
   const { login } = useAuth(); // Move this line inside the component
+  const [disable, setDisable] = useState(false);
 
   const formik = useFormik({
     initialValues: {
@@ -24,6 +27,7 @@ const LoginPage = () => {
     },
     validationSchema: validationSchema,
     onSubmit: async (values) => {
+      setDisable(true);
       try {
         const response = await axiosInstance.post(HOST_URL + '/api/user/login/', values);
         const { refresh, access } = response.data.token;
@@ -44,7 +48,9 @@ const LoginPage = () => {
           console.log("faild")
         }
         console.error(error);
-      }
+      } finally {
+        setDisable(false);
+    }
     },
   });
 
@@ -125,7 +131,7 @@ const LoginPage = () => {
                       className="block w-full max-w-xs mx-auto bg-indigo-500 hover:bg-indigo-700 focus:bg-indigo-700 text-white rounded-lg px-3 py-3 font-semibold"
                       disabled={!formik.isValid}
                     >
-                      Login
+                      {disable ? 'Logging in...' : 'Login'}
                     </button>
                   </div>
                 </div>

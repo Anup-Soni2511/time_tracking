@@ -74,6 +74,8 @@ useEffect(() => {
             setHasError(false);// Reset error state if successful
             setLoader(false)  
         } else {
+            setWorkedTime("00:00:00");
+            setAverageActivity("");
             setHasError(true);  // No intervals, set error state
             setLoader(false)
         }
@@ -81,6 +83,8 @@ useEffect(() => {
     } catch (error) {
         setHasError(true);
         setLoader(false)
+        setWorkedTime("00:00:00");
+        setAverageActivity("");
         console.error("Error fetching data:", error);
     }
     };

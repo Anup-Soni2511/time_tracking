@@ -1,5 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from './contexts/AuthContext.jsx';  // Import AuthContext for managing auth state
+import Lottie from 'lottie-react'; // Import Lottie
+import animationLogo from '../../Animations/Animation - 1729447323170.json'
 
 function Navbar() {
     const { isAuthenticated, logout } = useAuth();  // Get auth state and logout function
@@ -17,8 +19,8 @@ function Navbar() {
                 <div className="container flex flex-col flex-wrap items-center justify-between py-5 mx-auto md:flex-row max-w-7xl">
                     <div className="relative flex flex-col md:flex-row">
                         <a href="https://flowbite.com/" className="flex items-center space-x-3 rtl:space-x-reverse">
-                            <img src="https://flowbite.com/docs/images/logo.svg" className="h-8" alt="Flowbite Logo" />
-                            <span className="self-center text-2xl font-semibold whitespace-nowrap dark:text-white">Flowbite</span>
+                            <Lottie animationData={animationLogo} loop={true} style={{ height: '40px' }} />
+                            <span className="self-center text-2xl font-semibold whitespace-nowrap dark:text-white">Timer</span>
                         </a>
                         <nav className="flex flex-wrap items-center mb-5 text-base md:mb-0 md:pl-8 md:ml-8 md:border-l md:border-gray-200">
                             <Link to="/" className="mr-5 font-medium leading-6 text-gray-600 hover:text-gray-900">Home</Link>

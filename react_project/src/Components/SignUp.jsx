@@ -3,6 +3,8 @@ import * as Yup from 'yup';
 import { Link } from 'react-router-dom';
 import axiosInstance from './axiosConfig';
 import { useAuth } from './contexts/AuthContext';
+import { useState } from "react";
+
 
 const validationSchema = Yup.object({
   name: Yup.string()
@@ -26,6 +28,7 @@ const validationSchema = Yup.object({
 const SignUp = () => {
   const HOST_URL = import.meta.env.VITE_HOST_URL
   const { login } = useAuth(); 
+  const [disable, setDisable] = useState(false);
   const formik = useFormik({
     initialValues: {
       name: '',
@@ -36,6 +39,7 @@ const SignUp = () => {
     },
     validationSchema: validationSchema,
     onSubmit: async (values) => {
+      setDisable(true);
       try {
         const response = await axiosInstance.post(HOST_URL+'/api/user/register/', values);
         const { refresh, access } = response.data.token;
@@ -61,7 +65,9 @@ const SignUp = () => {
         } else {
         }
         console.error(error);
-      }
+      } finally {
+        setDisable(false);
+    }
     },
   });
 
@@ -169,7 +175,7 @@ const SignUp = () => {
                       className="block w-full max-w-xs mx-auto bg-indigo-500 hover:bg-indigo-700 focus:bg-indigo-700 text-white rounded-lg px-3 py-3 font-semibold"
                       disabled={!formik.isValid}
                     >
-                      REGISTER NOW
+                      {disable ? 'Creating Account...' : 'Register Now'}
                     </button>
                   </div>
                 </div>
