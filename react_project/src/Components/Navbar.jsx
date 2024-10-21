@@ -2,15 +2,34 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from './contexts/AuthContext.jsx';  // Import AuthContext for managing auth state
 import Lottie from 'lottie-react'; // Import Lottie
 import animationLogo from '../../Animations/Animation - 1729447323170.json'
+import { useDispatch } from 'react-redux';
+import { stopTimer } from '../redux/timerSlice.js';
+import axiosInstance from './axiosConfig.js';
 
 function Navbar() {
     const { isAuthenticated, logout } = useAuth();  // Get auth state and logout function
     const navigate = useNavigate();
+    const dispatch = useDispatch();
 
-    const handleLogout = () => {
-        logout();  // Call the logout function from context
-        localStorage.removeItem('access_token');  // Remove the token from localStorage
-        navigate('/login');  // Redirect to login page
+    const handleStopTimerAndLogout = async () => {
+        const HOST_URL = import.meta.env.VITE_HOST_URL;
+        try {
+            await axiosInstance.post(`${HOST_URL}/api/user/activity-details-stop/`, {
+                action: 'stop', // Payload data
+            }, {
+                withCredentials: true,
+            });
+
+            dispatch(stopTimer()); // Stop the timer in Redux
+            setTimeout(() => {
+                logout();  // Call the logout function from context
+                localStorage.removeItem('access_token');  // Remove the token from localStorage
+                navigate('/login');  // Redirect to login page
+            }, 1000);
+
+        } catch (error) {
+            console.error('Failed to stop the timer:', error);
+        }
     };
 
     return (
@@ -35,7 +54,7 @@ function Navbar() {
                         {isAuthenticated ? (
                             // Show the logout button if authenticated
                             <button 
-                                onClick={handleLogout}
+                                onClick={handleStopTimerAndLogout}
                                 className="text-base font-medium leading-6 text-gray-600 whitespace-no-wrap transition duration-150 ease-in-out hover:text-gray-900">
                                 Logout
                             </button>

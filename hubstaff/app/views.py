@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+from rest_framework_simplejwt.exceptions import TokenError
 from django.http import JsonResponse
 from django.utils import timezone
 import random
@@ -51,6 +52,17 @@ class UserLoginView(APIView):
                 return Response({'errors':{'non_field_errors':['Email or Password is not valid']}}, status=status.HTTP_404_NOT_FOUND)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+class UserRefreshTokenView(APIView):
+    def post(self, request, format=None):
+        refresh_token = request.data.get('refresh')
+        if not refresh_token:
+            return Response({'error': 'Refresh token is required'}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            token = RefreshToken(refresh_token)
+            new_access_token = str(token.access_token)
+            return Response({'token': {'access': new_access_token}}, status=status.HTTP_200_OK)
+        except TokenError:
+            return Response({'error': 'Invalid refresh token'}, status=status.HTTP_401_UNAUTHORIZED)
     
 class UserProfileView(APIView):
     permission_classes = [IsAuthenticated]

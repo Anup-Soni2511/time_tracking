@@ -1,10 +1,11 @@
 from django.contrib import admin
 from django.urls import path, include
-from app.views import UserRegistrationView, UserLoginView, UserProfileView, UserChangePasswordView, SendPasswordResetEmailView, UserResetPasswordView, UserActivityView, StopUserActivityView
+from app.views import UserRegistrationView, UserLoginView, UserProfileView, UserChangePasswordView, SendPasswordResetEmailView, UserResetPasswordView, UserActivityView, StopUserActivityView, UserRefreshTokenView
 
 urlpatterns = [
     path('register/', UserRegistrationView.as_view(), name='register'),
     path('login/', UserLoginView.as_view(), name='login'),
+    path('refresh/', UserRefreshTokenView.as_view(), name='user-refresh-token'),
     path('profile/', UserProfileView.as_view(), name='profile'),
     path('changepassword/', UserChangePasswordView.as_view(), name='changepassword'),
     path('send-reset-password-email/', SendPasswordResetEmailView.as_view(), name='send-reset-password-email'),
