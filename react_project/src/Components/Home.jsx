@@ -218,7 +218,7 @@ return (
     <div>
     <section className="bg-gray-100 dark:bg-gray-900">
         <div className="flex flex-col items-center px-4 py-8 mx-auto">
-        <div className="w-full h-full bg-white rounded-lg shadow dark:border md:mt-0 xl:p-0 dark:bg-gray-800 dark:border-gray-700">
+        <div className="w-full h-full bg-white rounded-lg shadow dark:border md:mt-0 xl:p-0 dark:bg-gray-800 dark:border-gray-700 bg-[#f9fafb]">
             <div className="p-4 space-y-4 md:space-y-6 sm:p-4">
             <div className="text-3xl">Screenshots</div>
             <div className="flex items-center space-x-4">
@@ -257,7 +257,7 @@ return (
             </div>
 
             <div className="flex my-8 bg-white shadow-sm border border-slate-200 rounded-lg w-1/3 h-40 text-center">
-                <div className="flex flex-grow">
+                <div className="flex flex-grow shadow-lg">
                 <div className="flex-1 p-4 content-center">
                     <h5 className="mb-2 text-slate-800 text-xl font-medium">
                     WORKED TIME
@@ -290,7 +290,7 @@ return (
                 return (
                 <div key={sectionIndex} className="my-8">
                     <h2 className="text-xl font-bold mb-4 py-3 flex items-center text-gray-800 after:flex-1 after:border-t after:border-gray-200 after:ms-6 dark:text-white dark:after:border-neutral-600">{format(section.sectionStart, 'h:mm a')} to {format(section.sectionEnd, 'h:mm a')}</h2>
-                    <div className="flex flex-wrap justify-center grid grid-cols-6">
+                    <div className="flex flex-wrap justify-center grid grid-cols-6 ">
                     {timeSlots.map((slot, slotIndex) => {
                         const cards = getCardsForTimeSlot(slot);
                         return (
@@ -298,7 +298,7 @@ return (
                             cards.map((item) => (
                             <div
                                 key={item.id}
-                                className="relative overflow-hidden shadow-lg m-3 pb-4 cursor-pointer group rounded-2xl h-52 "
+                                className="relative overflow-hidden shadow-lg m-3 pb-4 cursor-pointer group rounded-2xl h-52 shadow-xl"
                                 onClick={() => handleImageClick(item.id)}
                             >
                                 <img className="w-full h-28" src={`${HOST_URL}/media/${item.image_url}`} alt="Screenshot" />
