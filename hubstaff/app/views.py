@@ -104,7 +104,9 @@ class UserActivityView(APIView):
         # This is a blocking call, which means the server will wait here
         # In a real-world scenario, consider using a background task queue
         result = start_user_activity_monitor.delay(user.id)
-        request.session[f"user_activity_task_{user.id}"] = result.id
+        user.user_activity_task_id = result.id
+        user.save()
+        # request.session[f"user_activity_task_{user.id}"] = result.id
         
         # Extract task_id instead of returning the full object
         task_id = result.id
@@ -230,7 +232,9 @@ class StopUserActivityView(APIView):
         user = request.user
         if not user.is_authenticated:
             return JsonResponse({'error': 'User is not authenticated'}, status=403)
-        task_id = request.session.get(f"user_activity_task_{user.id}", None)
+
+        task_id = user.user_activity_task_id
+        # task_id = request.session.get(f"user_activity_task_{user.id}", None)
 
         if task_id:
             result = stop_user_activity_monitor.delay(user.id)

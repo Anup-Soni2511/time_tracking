@@ -51,6 +51,7 @@ class User(AbstractBaseUser):
     is_admin = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    user_activity_task_id = models.CharField(null=True, blank=True)
 
     objects = UserManager()
 

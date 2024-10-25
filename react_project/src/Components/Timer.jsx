@@ -69,13 +69,11 @@ const Timer = () => {
 
     const handleStopTimer = async () => {
         try {
-            await axiosInstance.post(
-                HOST_URL+'/api/user/activity-details-stop/',
-                { action: 'stop' }, // Payload data
-                {
-                    withCredentials: true,
-                }
-            );
+            await axiosInstance.post(`${HOST_URL}/api/user/activity-details-stop/`, {
+                action: 'stop', // Payload data
+            }, {
+                withCredentials: true,
+            });
             dispatch(stopTimer());
         } catch (error) {
             console.error('Failed to stop the timer:', error);
