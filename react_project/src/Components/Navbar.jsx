@@ -39,7 +39,7 @@ function Navbar() {
                     <div className="relative flex flex-col md:flex-row">
                         <a href="https://flowbite.com/" className="flex items-center space-x-3 rtl:space-x-reverse">
                             <Lottie animationData={animationLogo} loop={true} style={{ height: '40px' }} />
-                            <span className="self-center text-2xl font-semibold whitespace-nowrap dark:text-white">Timer</span>
+                            <span className="self-center text-2xl font-semibold whitespace-nowrap dark:text-white">Time</span>
                         </a>
                         <nav className="flex flex-wrap items-center mb-5 text-base md:mb-0 md:pl-8 md:ml-8 md:border-l md:border-gray-200">
                             <Link to="/" className="mr-5 font-medium leading-6 text-gray-600 hover:text-gray-900">Home</Link>
