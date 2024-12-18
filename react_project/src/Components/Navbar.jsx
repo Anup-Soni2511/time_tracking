@@ -43,7 +43,7 @@ function Navbar() {
                         </a>
                         <nav className="flex flex-wrap items-center mb-5 text-base md:mb-0 md:pl-8 md:ml-8 md:border-l md:border-gray-200">
                             <Link to="/" className="mr-5 font-medium leading-6 text-gray-600 hover:text-gray-900">Home1</Link>
-                            <Link to="/products" className="mr-5 font-medium leading-6 text-gray-600 hover:text-gray-900">Products</Link>
+                            <Link to="/products" className="mr-5 font-medium leading-6 text-gray-600 hover:text-gray-900">Products1</Link>
                             <Link to="/pricing" className="mr-5 font-medium leading-6 text-gray-600 hover:text-gray-900">Pricing</Link>
                             <Link to="/contact" className="mr-5 font-medium leading-6 text-gray-600 hover:text-gray-900">Contact Us</Link>
                             <Link to="/todos" className="mr-5 font-medium leading-6 text-gray-600 hover:text-gray-900">Todo</Link>
