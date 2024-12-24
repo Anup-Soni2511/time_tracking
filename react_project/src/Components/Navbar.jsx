@@ -46,7 +46,7 @@ function Navbar() {
                             <Link to="/products" className="mr-5 font-medium leading-6 text-gray-600 hover:text-gray-900">Products</Link>
                             <Link to="/pricing" className="mr-5 font-medium leading-6 text-gray-600 hover:text-gray-900">Pricing</Link>
                             <Link to="/contact" className="mr-5 font-medium leading-6 text-gray-600 hover:text-gray-900">Contact Us</Link>
-                            <Link to="/todos" className="mr-5 font-medium leading-6 text-gray-600 hover:text-gray-900">Todo</Link>
+                            <Link to="/todos" className="mr-5 font-medium leading-6 text-gray-600 hover:text-gray-900">Todo1</Link>
                         </nav>
                     </div>
 
