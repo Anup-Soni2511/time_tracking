@@ -20,10 +20,13 @@ jobs:
           git config user.name "anup"
           git config user.email "anupsoni2526@gmail.com"
 
+      # Fetch all branches
+      - name: Fetch All Branches
+        run: git fetch --all
+
       # Merge `dev_anup` into `main`
       - name: Merge dev_anup into main
         run: |
-          git fetch origin main
           git checkout main
           git pull origin main
           git merge origin/dev_anup --no-edit --allow-unrelated-histories
@@ -34,3 +37,9 @@ jobs:
         if: success()
         run: |
           echo "dev_anup branch successfully merged into main."
+
+      # Optional: Notify failure
+      - name: Notify Failure
+        if: failure()
+        run: |
+          echo "Failed to merge dev_anup into main."
