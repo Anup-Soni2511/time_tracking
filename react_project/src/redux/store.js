@@ -1,7 +1,7 @@
 import { configureStore, combineReducers } from '@reduxjs/toolkit';
 import { persistReducer, persistStore } from 'redux-persist';
 import storage from 'redux-persist/lib/storage';
-import timerReducer from './timerSlice';
+import timerReducer from './timerSlice.js';
 
 const persistConfig = {
   key: 'root',

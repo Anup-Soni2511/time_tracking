@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { store } from '../redux/store';
-import { stopTimer } from '../redux/timerSlice';
+import { stopTimer } from '../redux/timerSlice.js';
 
 const axiosInstance = axios.create({
   baseURL: import.meta.env.VITE_HOST_URL, // Adjust based on your setup

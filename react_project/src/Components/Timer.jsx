@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { setTime, startTimer, stopTimer } from '../redux/timerSlice';
+import { setTime, startTimer, stopTimer } from '../redux/timerSlice.js';
 import axiosInstance from './axiosConfig';
 
 
