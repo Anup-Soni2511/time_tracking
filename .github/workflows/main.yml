@@ -25,6 +25,7 @@ jobs:
         run: |
           git fetch origin main
           git checkout main
+          git pull origin main
           git merge origin/dev_anup --no-edit
           git push origin main
 
