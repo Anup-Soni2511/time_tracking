@@ -9,4 +9,9 @@ export default defineConfig({
       plugins: [tailwindcss()],
     },
   },
+  json: {
+    stringify: true
+  }
 });
+
+

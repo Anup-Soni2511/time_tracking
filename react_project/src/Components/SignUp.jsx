@@ -53,7 +53,7 @@ const SignUp = () => {
       } catch (error) {
         if (error.response && error.response.data) {
           const backendErrors = error.response.data;
-          const formikErrors = {};
+          let formikErrors = {};
 
           if (backendErrors.email) {
             formikErrors.email = backendErrors.email[0];
@@ -63,6 +63,7 @@ const SignUp = () => {
           }
           formik.setErrors(formikErrors)
         } else {
+          console.log("else code")
         }
         console.error(error);
       } finally {

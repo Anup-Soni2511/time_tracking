@@ -28,13 +28,14 @@ const UpdatePassword = () => {
       } catch (error) {
         if (error.response && error.response.data) {
           const backendErrors = error.response.data.non_field_errors;
-          const formikErrors = {};
+          let formikErrors = {};
 
           if (backendErrors.password) {
             formikErrors = backendErrors[0];
           }
           formik.setErrors(formikErrors)
         } else {
+          console.log("else code")
         }
         console.error(error);
       }
