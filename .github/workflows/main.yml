@@ -25,7 +25,7 @@ jobs:
         run: |
           git fetch origin main
           git checkout main
-          git merge origin/dev_anup --no-edit
+          git merge origin/dev_anup --no-edit --allow-unrelated-histories
           git push origin main
 
       # Optional: Notify success
