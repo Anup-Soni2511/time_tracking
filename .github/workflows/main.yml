@@ -10,26 +10,38 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Checkout the repository
+      # Step 1: Checkout the repository
       - name: Checkout Code
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0 # Fetch full history to ensure unrelated histories can be resolved
 
-      # Set up Git user for committing
+      # Step 2: Set up Git user for committing
       - name: Configure Git User
         run: |
           git config user.name "anup"
           git config user.email "anupsoni2526@gmail.com"
 
-      # Merge `dev_anup` into `main`
+      # Step 3: Fetch all branches
+      - name: Fetch All Branches
+        run: git fetch --all
+
+      # Step 4: Merge `dev_anup` into `main`
       - name: Merge dev_anup into main
         run: |
-          git fetch origin main
           git checkout main
+          git pull origin main
           git merge origin/dev_anup --no-edit --allow-unrelated-histories
           git push origin main
 
-      # Optional: Notify success
+      # Step 5: Optional - Notify success
       - name: Notify Success
         if: success()
         run: |
           echo "dev_anup branch successfully merged into main."
+
+      # Step 6: Optional - Notify failure
+      - name: Notify Failure
+        if: failure()
+        run: |
+          echo "Failed to merge dev_anup into main."
