@@ -1,0 +1,67 @@
+repos:
+  - repo: https://github.com/PyCQA/bandit
+    rev: 1.7.6
+    hooks:
+      - id: bandit
+        name: bandit
+        description: 'Bandit is a tool for finding common security issues in Python code'
+        entry: bandit
+        language: python
+        language_version: python3
+        types: [python]
+        require_serial: true
+  - repo: https://github.com/pre-commit/mirrors-pylint
+    rev: v3.0.0a5
+    hooks:
+      - id: pylint
+        args: ['--score=yes']
+
+  - repo: https://github.com/pycqa/flake8
+    rev: 6.1.0
+    hooks:
+      - id: flake8
+
+  - repo: local
+    hooks:
+      - id: pylint
+        name: pylint
+        entry: pylint
+        language: system
+        types: [python]
+        args: ["-rn", "-sn", "--rcfile=.pylintrc", "--fail-on=I"]
+        exclude: tests(/\w*)*/functional/|tests/input|tests(/\w*)*data/|doc/
+      # We define an additional manual step to allow running pylint with a spelling
+      # checker in CI.
+      - id: pylint
+        alias: pylint-with-spelling
+        name: pylint
+        entry: pylint
+        language: system
+        types: [python]
+        args: ["-rn", "-sn", "--rcfile=.pylintrc", "--fail-on=I", "--spelling-dict=en"]
+        exclude: tests(/\w*)*/functional/|tests/input|tests(/\w*)*data/|doc/
+        stages: [manual]
+      - id: sphinx-generated-doc
+        alias: sphinx-generated-doc
+        name: sphinx-generated-doc
+        entry: make -C doc/ html
+        pass_filenames: false
+        language: system
+        stages: [push]
+      - id: check-newsfragments
+        name: Check newsfragments
+        entry: python3 -m script.check_newsfragments
+        language: system
+        types: [text]
+        files: ^(doc/whatsnew/fragments)
+        exclude: doc/whatsnew/fragments/_.*.rst
+
+  - repo: local
+    hooks:
+      - id: pytest-check
+        name: pytest-check
+        entry: pytest
+        language: system
+        pass_filenames: false
+        always_run: true
+        
